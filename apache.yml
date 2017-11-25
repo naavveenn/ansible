@@ -13,13 +13,6 @@
       path: /var/www/html/index.html
   - name: adding the content in index.html
     shell: echo "This is a custom website" > /var/www/html/index.html
-
-  - name: changing the text
-    lineinfile:
-      regexp: ^This is a custom website
-      dest: /var/www/html/index.html
-      insertafter: ^#website
-      line: "This is a custom webiste for {{ ansible_hostname }}"
   - name: starting the apache server
     service:
       name: httpd

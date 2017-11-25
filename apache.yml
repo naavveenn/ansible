@@ -6,20 +6,20 @@
   - name: installing apache server
     yum:
       name: httpd
-      state: absent
+      state: present
   - name: making index.html file in /var/www/html directory
     file:
       state: touch
       path: /var/www/html/index.html
   - name: adding the content in index.html
-    shell: echo "THis is my custom website" > /var/www/html/index.html
+    shell: echo "This is a custom website" > /var/www/html/index.html
 
   - name: changing the text
     lineinfile:
-      regexp: ^THis is my custom website
+      regexp: ^This is a custom website
       dest: /var/www/html/index.html
       insertafter: ^#website
-      line: "This is my custom webiste for {{ ansible_hostname }}"
+      line: "This is a custom webiste for {{ ansible_hostname }}"
   - name: starting the apache server
     service:
       name: httpd

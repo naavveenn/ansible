@@ -1,6 +1,6 @@
 ---
 
-- hosts: ec2
+- hosts: tag_Name_BastionHost
   become: yes
   tasks:
   - name: installing apache server

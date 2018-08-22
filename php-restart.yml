@@ -1,0 +1,9 @@
+---
+- hosts: "{{ host }}"
+  become: yes
+  tasks:
+  - name: start php5.6-fpm
+    shell: service php5.6-fpm restart
+    register: out
+  - debug:
+      msg: "{{ out }}"

@@ -1,0 +1,44 @@
+---
+ - hosts: "{{ host }}"
+   become: yes
+   tasks:
+   - name: Check if Git is installed or not for Debian distro
+     shell: dpkg -s git
+     ignore_errors: True
+     register: output
+     when: ansible_os_family == "Debian"
+
+   - name: install git
+     apt:
+       pkg: git
+       state: present
+     when: (output is failed and ansible_os_family == "Debian")
+
+   - name: Check if Git is installed or not for RedHat distro
+     shell: yum list installed | grep -i git
+     ignore_errors: True
+     register: out
+     when: ansible_os_family == "RedHat"
+
+   - name: install git
+     yum:
+       pkg: git
+       state: present
+     when: (out is failed and ansible_os_family == "RedHat")
+
+   - name: Cloning Lynis git repo
+     command: chdir=/opt/ git clone https://github.com/CISOfy/lynis.git
+     register: git_output
+
+   - name: Perform audit
+     shell: chdir=/opt/lynis ./lynis audit system 
+
+   - name: Fetching warnings and suggestions from the report
+     shell: grep Warning /var/log/lynis.log > /opt/warning.txt && grep Suggestion /var/log/lynis.log > /opt/suggestion.txt
+   - fetch:
+       src: /opt/{{ item }}
+       dest: /tmp/
+     with_items:
+       - warning.txt
+       - suggestion.txt
+       

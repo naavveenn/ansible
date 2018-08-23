@@ -1,0 +1,45 @@
+---
+- hosts: local
+  connection: local
+#  vars_files:
+#  - /home/ansible/awscreds_ec2.yml    
+  tasks:
+  - name: Get Instance ID
+    ec2_instance_facts:
+      aws_access_key: "{{ aws_id }}"
+      aws_secret_key: "{{ aws_key }}"
+      region: "{{ aws_region }}"
+      filters:
+        instance-state-name: running
+    register: ec2
+
+  - name: Create a Basic CPU Alarm
+    ec2_metric_alarm:
+      aws_access_key: "{{ aws_id }}"
+      aws_secret_key: "{{ aws_key }}"
+      region: "{{ aws_region }}"
+      state: present
+      name: "msp-{{ type }}-{{ metric_name }}-{{ item.instance_id }}"
+      metric: "{{ metric_name }}"
+      namespace: "{{ namespace }}"
+      statistic: "{{ stats }}"
+      comparison: "{{ comparison }}"
+      threshold: "{{ threshold_value }}"
+      period: "{{ period }}"
+      evaluation_periods: 1
+      unit: "{{ unit }}"
+      description: "High {{ metric_name }} for {{ item.instance_id }} - {{ type }}"
+      dimensions: {'InstanceId': "{{ item.instance_id }}"}
+      alarm_actions: "{{ sns_arn }}" 
+    with_items: 
+       - "{{ ec2.instances }}"
+  - name: Tagging
+    ec2_tag:
+      region: "{{ aws_region }}"
+      resource: "{{ item.instance_id }}"
+      state: present
+      tags:
+        Owner: Naveen
+        Distro: Ubuntu 
+    with_items: 
+       - "{{ ec2.instances }}"
